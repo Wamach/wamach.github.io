@@ -3,21 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>Medicamentos - Horario</title>
 </head>
+<!DOCTYPE html>
+<html>
 <body>
 
-    <h1>Medicamentos</h1>
-    <form action="procesar.php" method="post">
-        <label for="medicamento">Nombre del medicamento</label>
-        <input type="text" name="medicamento" id="medicamento">
-        <br>
-        <label for="frecuenciaHoras">Frecuencia en horas de consumo</label>
-        <input type="number" name="frecuenciaHoras" id="frecuenciaHoras">
-        <br>
-        <label for="frecuenciaDias">Frecuencia de dias de consumo</label>
-        <input type="number" name="frecuenciaDias" id="frecuenciaDias">
-        <br>
-        <input type="submit" value="Enviar">
+<h2>Formulario de Medicamentos</h2>
+
+<form id="medicamentosForm">
+  <label for="inicio">Fecha y hora de inicio del medicamento (YYYY-MM-DD HH:MM):</label><br>
+  <input type="datetime-local" id="inicio" name="inicio"><br>
+  <label for="nombre">Nombre del medicamento:</label><br>
+  <input type="text" id="nombre" name="nombre"><br>
+  <label for="frecuencia">Frecuencia de consumo en horas:</label><br>
+  <input type="number" id="frecuencia" name="frecuencia"><br>
+  <label for="duracion">Duración del tratamiento en días:</label><br>
+  <input type="number" id="duracion" name="duracion"><br>
+  <input type="submit" value="Enviar">
+</form>
+
+<script>
+    let medicamentos = [];
+    
+    document.getElementById('medicamentosForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+    
+      let inicioStr = document.getElementById('inicio').value;
+      let nombreMedicamento = document.getElementById('nombre').value;
+      let frecuenciaStr = document.getElementById('frecuencia').value;
+      let duracionStr = document.getElementById('duracion').value;
+    
+      let inicioMedicamento = new Date(inicioStr);
+      let frecuenciaConsumoHoras = parseInt(frecuenciaStr);
+      let duracionDias = parseInt(duracionStr);
+    
+      medicamentos.push({
+        inicioMedicamento,
+        nombreMedicamento,
+        frecuenciaConsumoHoras,
+        duracionDias
+      });
+    
+      console.log(medicamentos);
+    });
+    </script>
+
 </body>
 </html>
