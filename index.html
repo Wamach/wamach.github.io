@@ -16,90 +16,125 @@
     <div class="row justify-content-center">
       <div class="col-md-6">
         <h2 class="text-center">Formulario de Medicamentos</h2>
+        <p class="text-center">Este formulario te permitirá generar un horario de medicamentos en formato PDF
+          podras ver por horas y dias cuando debes tomar tus medicamentos.
+        </p>
 
-        <form id="medicamentosForm">
-          <div class="form-group">
-            <label for="inicio">Fecha y hora de inicio del medicamento (YYYY-MM-DD HH:MM):</label>
-            <input type="datetime-local" id="inicio" name="inicio" class="form-control">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <p class="text-center">Desarrollado por Walter Machinena </p>
           </div>
-          <div class="form-group">
-            <label for="nombre">Nombre del medicamento:</label>
-            <input type="text" id="nombre" name="nombre" class="form-control">
+        </div>
+
+        <button id="agregarMedicamento" class="btn btn-primary mx-auto d-block">Agregar medicamento</button>
+        <div id="medicamentosForm">
+          <!-- El primer formulario de medicamentos se agregará aquí -->
+          <div id="medicamentosFormContainer">
+
           </div>
-          <div class="form-group">
-            <label for="frecuencia">Frecuencia de consumo en horas:</label>
-            <input type="number" id="frecuencia" name="frecuencia" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="duracion">Duración del tratamiento en días:</label>
-            <input type="number" id="duracion" name="duracion" class="form-control">
-          </div>
-          <div class="form-group text-center">
-            <input type="submit" value="Enviar" class="btn btn-primary">
-          </div>
-        </form>
+        </div>
+        <div class="text-center"></div>
+        <button id="enviarMedicamentos" style="width: 200px; background-color: gray; margin: 0 auto;"
+          class="btn btn-primary">Enviar</button>
       </div>
     </div>
-  </div>
 
-  <script>
-    let medicamentos = [];
-    document.getElementById('medicamentosForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      let inicioStr = document.getElementById('inicio').value;
-      let nombreMedicamento = document.getElementById('nombre').value;
-      let frecuenciaStr = document.getElementById('frecuencia').value;
-      let duracionStr = document.getElementById('duracion').value;
-      let inicioMedicamento = new Date(inicioStr);
-      let frecuenciaConsumoHoras = parseInt(frecuenciaStr);
-      let duracionDias = parseInt(duracionStr);
-      medicamentos.push({
-        inicioMedicamento,
-        nombreMedicamento,
-        frecuenciaConsumoHoras,
-        duracionDias
+    <script>
+      let medicamentos = [];
+      // Función para generar un nuevo formulario de medicamentos
+      function generarFormularioMedicamentos() {
+        let nuevoFormulario = document.createElement('form');
+        nuevoFormulario.innerHTML = `
+        <div class="form-group">
+          <label for="inicio">Fecha y hora de inicio del medicamento (DD-MM-YYYY HH:MM):</label>
+          <input type="datetime-local" id="inicio" name="inicio" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="nombre">Nombre del medicamento:</label>
+          <input type="text" id="nombre" name="nombre" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="frecuencia">Frecuencia de consumo en horas:</label>
+          <input type="number" id="frecuencia" name="frecuencia" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="duracion">Duración del tratamiento en días:</label>
+          <input type="number" id="duracion" name="duracion" class="form-control">
+        </div>
+        <hr class="my-4" style="border-top: 3px solid #000;">
+      `;
+        return nuevoFormulario;
+      }
+
+      // Agrega el primer formulario de medicamentos al cargar la página
+      document.getElementById('medicamentosForm').appendChild(generarFormularioMedicamentos());
+
+      // Agrega un nuevo formulario de medicamentos cada vez que se hace clic en el botón "Agregar medicamento"
+      document.getElementById('agregarMedicamento').addEventListener('click', function () {
+        document.getElementById('medicamentosForm').appendChild(generarFormularioMedicamentos());
       });
-  
-      let medicamentosPorFechaHora = {};
-      medicamentos.forEach(medicamento => {
-        let fechaFinal = new Date(medicamento.inicioMedicamento.getTime() + medicamento.duracionDias * 24 * 60 * 60 * 1000);
-        let siguienteToma = new Date(medicamento.inicioMedicamento.getTime());
-        while (siguienteToma < fechaFinal) {
-          if (siguienteToma >= new Date()) {
-            let fechaHora = siguienteToma.toISOString().slice(0, 16);
-            if (!medicamentosPorFechaHora[fechaHora]) {
-              medicamentosPorFechaHora[fechaHora] = [];
+
+      document.getElementById('enviarMedicamentos').addEventListener('click', function () {
+        let formularios = document.querySelectorAll('#medicamentosForm form');
+        let medicamentos = [];
+
+        formularios.forEach(formulario => {
+          let inicioStr = formulario.querySelector('#inicio').value;
+          let nombreMedicamento = formulario.querySelector('#nombre').value;
+          let frecuenciaStr = formulario.querySelector('#frecuencia').value;
+          let duracionStr = formulario.querySelector('#duracion').value;
+          let inicioMedicamento = new Date(inicioStr);
+          let frecuenciaConsumoHoras = parseInt(frecuenciaStr);
+          let duracionDias = parseInt(duracionStr);
+
+          medicamentos.push({
+            inicioMedicamento,
+            nombreMedicamento,
+            frecuenciaConsumoHoras,
+            duracionDias
+          });
+        });
+
+        let medicamentosPorFechaHora = {};
+        medicamentos.forEach(medicamento => {
+          let fechaFinal = new Date(medicamento.inicioMedicamento.getTime() + medicamento.duracionDias * 24 * 60 * 60 * 1000);
+          let siguienteToma = new Date(medicamento.inicioMedicamento.getTime());
+          while (siguienteToma < fechaFinal) {
+            if (siguienteToma >= new Date()) {
+              let fechaHora = siguienteToma.toISOString().slice(0, 16);
+              if (!medicamentosPorFechaHora[fechaHora]) {
+                medicamentosPorFechaHora[fechaHora] = [];
+              }
+              medicamentosPorFechaHora[fechaHora].push(medicamento.nombreMedicamento);
             }
-            medicamentosPorFechaHora[fechaHora].push(medicamento.nombreMedicamento);
+            siguienteToma = new Date(siguienteToma.getTime() + medicamento.frecuenciaConsumoHoras * 60 * 60 * 1000);
           }
-          siguienteToma = new Date(siguienteToma.getTime() + medicamento.frecuenciaConsumoHoras * 60 * 60 * 1000);
+        });
+
+        let medicamentosOrdenados = Object.entries(medicamentosPorFechaHora).sort();
+
+        var doc = new jsPDF();
+        var columnWidths = [20, 55, 100, 150];
+        var headers = ['Fecha', 'Día', 'Hora', 'Medicamento'];
+        for (var i = 0; i < headers.length; i++) {
+          doc.text(headers[i], columnWidths[i], 20);
         }
+        for (var i = 0; i < medicamentosOrdenados.length; i++) {
+          var fechaHora = medicamentosOrdenados[i][0];
+          var meds = medicamentosOrdenados[i][1];
+          var y = 30 + (10 * i);
+          var fecha = fechaHora.split('T')[0];
+          var hora = fechaHora.split('T')[1];
+          var diaSemana = new Date(fecha).toLocaleDateString('es-ES', { weekday: 'long' });
+          var nombres = meds.join(", ");
+          doc.text(fecha, columnWidths[0], y);
+          doc.text(diaSemana, columnWidths[1], y);
+          doc.text(hora, columnWidths[2], y);
+          doc.text(nombres, columnWidths[3], y);
+        }
+        doc.save('medicamentos.pdf');
       });
-  
-      let medicamentosOrdenados = Object.entries(medicamentosPorFechaHora).sort();
-  
-      var doc = new jsPDF();
-      var columnWidths = [20, 55, 100, 150];
-      var headers = ['Fecha', 'Día', 'Hora', 'Medicamento'];
-      for (var i = 0; i < headers.length; i++) {
-        doc.text(headers[i], columnWidths[i], 20);
-      }
-      for (var i = 0; i < medicamentosOrdenados.length; i++) {
-        var fechaHora = medicamentosOrdenados[i][0];
-        var meds = medicamentosOrdenados[i][1];
-        var y = 30 + (10 * i);
-        var fecha = fechaHora.split('T')[0];
-        var hora = fechaHora.split('T')[1];
-        var diaSemana = new Date(fecha).toLocaleDateString('es-ES', { weekday: 'long' });
-        var nombres = meds.join(", ");
-        doc.text(fecha, columnWidths[0], y);
-        doc.text(diaSemana, columnWidths[1], y);
-        doc.text(hora, columnWidths[2], y);
-        doc.text(nombres, columnWidths[3], y);
-      }
-      doc.save('medicamentos.pdf');
-    });
-  </script>
+    </script>
 
 </body>
 
