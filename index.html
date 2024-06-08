@@ -20,22 +20,22 @@
           podras ver por horas y dias cuando debes tomar tus medicamentos.
         </p>
 
-        <div class="row justify-content-center">
+        <div class="row justify-content-end fixed-top">
           <div class="col-md-6">
-            <p class="text-center">Desarrollado por Walter Machinena </p>
+            <p class="text-center">@ Desarrollado por Walter Machinena </p>
           </div>
         </div>
 
-        <button id="agregarMedicamento" class="btn btn-primary mx-auto d-block">Agregar medicamento</button>
         <div id="medicamentosForm">
           <!-- El primer formulario de medicamentos se agregará aquí -->
           <div id="medicamentosFormContainer">
 
           </div>
         </div>
-        <div class="text-center"></div>
-        <button id="enviarMedicamentos" style="width: 200px; background-color: gray; margin: 0 auto;"
-          class="btn btn-primary">Enviar</button>
+        <div class="text-center">
+          <button id="agregarMedicamento" class="btn btn-success btn-lg">Agregar medicamento</button>
+          <button id="enviarMedicamentos" class="btn btn-primary btn-lg ml-2">Enviar</button>
+        </div>
       </div>
     </div>
 
@@ -61,7 +61,7 @@
           <label for="duracion">Duración del tratamiento en días:</label>
           <input type="number" id="duracion" name="duracion" class="form-control">
         </div>
-        <hr class="my-4" style="border-top: 3px solid #000;">
+        <hr class="my-2" style="border-top: 4px solid #green;">
       `;
         return nuevoFormulario;
       }
