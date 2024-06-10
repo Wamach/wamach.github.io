@@ -1,5 +1,5 @@
 # wamach.github.io
-- - - - Formulario de medicamentos - - - -
+- - - - Formulario de medicamentos
 
 Parametros de entrada:
 - Dia en formato (DD-MM-YYYY)
