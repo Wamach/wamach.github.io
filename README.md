@@ -7,8 +7,7 @@ Parametros de entrada:
 - Frecuencia de horas
 - Dias de consumo
 
-Salida:
-- Genera un PDF con:
+Salida - Genera un PDF con:
 -  Dia (Formato DD-MM-YYYY) ,
 -  Dia de la semana (Lunes / Martes, Miercoles, Etc.)
 -  Hora de consumo, y
