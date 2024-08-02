@@ -2,41 +2,41 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-    <link rel="icon" type="image/svg+xml" href="calendar2-month.svg">
-    <title>Medicamentos - Horario</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <link rel="icon" type="image/svg+xml" href="calendar2-month.svg">
+  <title>Medicamentos - Horario</title>
 </head>
 
 <body>
 
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="text-center">Formulario de Medicamentos</h2>
-                <p class="text-center">Este formulario te permitirá generar un horario de medicamentos en formato PDF
-                    podrás ver por horas y días cuándo debes tomar tus medicamentos.</p>
-                <p class="text-center">@ Desarrollado por: Walter Machinena</p>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h2 class="text-center">Formulario de Medicamentos</h2>
+        <p class="text-center">Este formulario te permitirá generar un horario de medicamentos en formato PDF
+          podrás ver por horas y días cuándo debes tomar tus medicamentos.</p>
+        <p class="text-center">@ Desarrollado por: Walter Machinena</p>
 
-                <hr class="my-2" style="border-top: 1px solid green;">
-                <div id="medicamentosForm">
-                    <div id="medicamentosFormContainer">
-                    </div>
-                </div>
-                <div class="text-center">
-                    <button id="agregarMedicamento" class="btn btn-success btn-md mr-2">Agregar medicamento</button>
-                    <button id="enviarMedicamentos" class="btn btn-primary btn-md ml-2">Generar PDF</button>
-                </div>
-            </div>
+        <hr class="my-2" style="border-top: 1px solid green;">
+        <div id="medicamentosForm">
+          <div id="medicamentosFormContainer">
+          </div>
         </div>
+        <div class="text-center">
+          <button id="agregarMedicamento" class="btn btn-success btn-md mr-2">Agregar medicamento</button>
+          <button id="enviarMedicamentos" class="btn btn-primary btn-md ml-2">Generar PDF</button>
+        </div>
+      </div>
+    </div>
 
-        <script>
-            function generarFormularioMedicamentos() {
-                let nuevoFormulario = document.createElement('form');
-                nuevoFormulario.innerHTML = `
+    <script>
+      function generarFormularioMedicamentos() {
+        let nuevoFormulario = document.createElement('form');
+        nuevoFormulario.innerHTML = `
                     <div class="form-group">
                         <label for="inicio">Fecha y hora de inicio del medicamento (YYYY-MM-DD HH:MM):</label>
                         <input type="datetime-local" id="inicio" name="inicio" class="form-control" required>
@@ -64,123 +64,126 @@
                     </div>
                     <hr class="my-2" style="border-top: 1px solid green;">
                 `;
-                return nuevoFormulario;
+        return nuevoFormulario;
+      }
+
+      document.getElementById('medicamentosFormContainer').appendChild(generarFormularioMedicamentos());
+
+      document.getElementById('agregarMedicamento').addEventListener('click', function () {
+        document.getElementById('medicamentosFormContainer').appendChild(generarFormularioMedicamentos());
+      });
+
+      document.getElementById('enviarMedicamentos').addEventListener('click', function () {
+        let formularios = document.querySelectorAll('#medicamentosFormContainer form');
+        let medicamentos = [];
+
+        // Recopilar datos del formulario
+        formularios.forEach(formulario => {
+          let inicioStr = formulario.querySelector('#inicio').value;
+          console.log("Fecha y hora de inicio seleccionada:", inicioStr); // Comprobación del valor
+          let nombreMedicamento = formulario.querySelector('#nombre').value;
+          let frecuenciaStr = formulario.querySelector('#frecuencia').value;
+          let duracionStr = formulario.querySelector('#duracion').value;
+
+          let frecuenciaConsumoHoras = parseInt(frecuenciaStr);
+          let duracionDias = parseInt(duracionStr);
+
+          medicamentos.push({
+            inicioStr,
+            nombreMedicamento,
+            frecuenciaConsumoHoras,
+            duracionDias
+          });
+        });
+
+        // Calcular las dosis como strings
+        let medicamentosPorFechaHora = calcularHorasDosisComoString(medicamentos);
+        generarPDF(medicamentosPorFechaHora);
+      });
+
+      function calcularHorasDosisComoString(medicamentos) {
+        let medicamentosPorFechaHora = {};
+
+        medicamentos.forEach(medicamento => {
+          let [fecha, hora] = medicamento.inicioStr.split('T');
+          let [ano, mes, dia] = fecha.split('-').map(Number);
+          let [horaInicio, minutoInicio] = hora.split(':').map(Number);
+
+          // Convertir hora de inicio a minutos para facilitar cálculos
+          let minutosInicio = horaInicio * 60 + minutoInicio;
+          let minutosTotalesPorDia = 24 * 60;
+
+          // Iterar sobre cada día del tratamiento
+          for (let diaTratamiento = 0; diaTratamiento < medicamento.duracionDias; diaTratamiento++) {
+            // Calcular cada toma del día
+            for (let minutosDesdeInicio = 0; minutosDesdeInicio < minutosTotalesPorDia; minutosDesdeInicio += medicamento.frecuenciaConsumoHoras * 60) {
+              // Calcular la fecha y hora exactas para la toma
+              let minutosTotales = minutosInicio + minutosDesdeInicio;
+              let horasTotales = Math.floor(minutosTotales / 60);
+              let minutosDelDia = minutosTotales % 60;
+
+              // Formatear la hora correctamente
+              let horaToma = `${horasTotales % 24}`.padStart(2, '0');
+              let minutoToma = `${minutosDelDia}`.padStart(2, '0');
+
+              // Ajustar el día si las horas totales superan las 24 horas
+              let diasExtra = Math.floor(horasTotales / 24);
+              let fechaToma = new Date(ano, mes - 1, dia + diaTratamiento + diasExtra);
+
+              // Formatear la fecha y la clave de almacenamiento
+              let fechaString = fechaToma.toISOString().slice(0, 10);
+              let clave = `${fechaString} ${horaToma}:${minutoToma}`;
+
+              if (!medicamentosPorFechaHora[clave]) {
+                medicamentosPorFechaHora[clave] = [];
+              }
+              medicamentosPorFechaHora[clave].push(medicamento.nombreMedicamento);
             }
+          }
+        });
 
-            document.getElementById('medicamentosFormContainer').appendChild(generarFormularioMedicamentos());
+        return Object.entries(medicamentosPorFechaHora).sort();
+      }
 
-            document.getElementById('agregarMedicamento').addEventListener('click', function () {
-                document.getElementById('medicamentosFormContainer').appendChild(generarFormularioMedicamentos());
-            });
+      function generarPDF(medicamentosOrdenados) {
+        var doc = new jsPDF();
+        doc.setFont("helvetica");
+        doc.setFontSize(12);
+        doc.setTextColor(40);
 
-            document.getElementById('enviarMedicamentos').addEventListener('click', function () {
-                let formularios = document.querySelectorAll('#medicamentosFormContainer form');
-                let medicamentos = [];
+        // Ajustar los anchos de las columnas para mejorar el espaciado
+        var columnWidths = [30, 65, 80, 120]; // Anchos ajustados
+        var headers = ['Fecha', 'Día', 'Hora', 'Medicamento'];
+        for (var i = 0; i < headers.length; i++) {
+          doc.text(headers[i], columnWidths[i], 20);
+        }
 
-                // Recopilar datos del formulario
-                formularios.forEach(formulario => {
-                    let inicioStr = formulario.querySelector('#inicio').value;
-                    console.log("Fecha y hora de inicio seleccionada:", inicioStr); // Comprobación del valor
-                    let nombreMedicamento = formulario.querySelector('#nombre').value;
-                    let frecuenciaStr = formulario.querySelector('#frecuencia').value;
-                    let duracionStr = formulario.querySelector('#duracion').value;
+        var y = 30;
+        for (var i = 0; i < medicamentosOrdenados.length; i++) {
+          var fechaHora = medicamentosOrdenados[i][0];
+          var meds = medicamentosOrdenados[i][1];
+          var [fecha, hora] = fechaHora.split(' ');
+          var diaSemana = new Date(`${fecha}T${hora}`).toLocaleDateString('es-ES', { weekday: 'long' });
+          var nombres = meds.join(", ");
+          var splitNombres = doc.splitTextToSize(nombres, columnWidths[3] - columnWidths[2] + 10);
+          doc.text(fecha, columnWidths[0], y);
+          doc.text(diaSemana, columnWidths[1], y);
+          doc.text(hora, columnWidths[2] + 5, y); // Desplazar un poco hacia la derecha
+          for (var j = 0; j < splitNombres.length; j++) {
+            doc.text(splitNombres[j], columnWidths[3], y + j * 5);
+          }
+          doc.line(20, y + 3 + (splitNombres.length - 1) * 5, 170, y + 3 + (splitNombres.length - 1) * 5);
+          y += 10 + (splitNombres.length - 1) * 5;
+          if (y > doc.internal.pageSize.height - 20) { // Ajuste para evitar que el contenido se corte en la parte inferior
+            doc.addPage();
+            y = 20;
+          }
+        }
+        doc.save('medicamentos.pdf');
+      }
 
-                    let frecuenciaConsumoHoras = parseInt(frecuenciaStr);
-                    let duracionDias = parseInt(duracionStr);
 
-                    medicamentos.push({
-                        inicioStr,
-                        nombreMedicamento,
-                        frecuenciaConsumoHoras,
-                        duracionDias
-                    });
-                });
-
-                // Calcular las dosis como strings
-                let medicamentosPorFechaHora = calcularHorasDosisComoString(medicamentos);
-                generarPDF(medicamentosPorFechaHora);
-            });
-
-            function calcularHorasDosisComoString(medicamentos) {
-                let medicamentosPorFechaHora = {};
-
-                medicamentos.forEach(medicamento => {
-                    let [fecha, hora] = medicamento.inicioStr.split('T');
-                    let [ano, mes, dia] = fecha.split('-').map(Number);
-                    let [horaInicio, minutoInicio] = hora.split(':').map(Number);
-
-                    // Convertir hora de inicio a minutos para facilitar cálculos
-                    let minutosInicio = horaInicio * 60 + minutoInicio;
-                    let minutosTotalesPorDia = 24 * 60;
-
-                    // Iterar sobre cada día del tratamiento
-                    for (let diaTratamiento = 0; diaTratamiento < medicamento.duracionDias; diaTratamiento++) {
-                        // Calcular cada toma del día
-                        for (let minutosDesdeInicio = 0; minutosDesdeInicio < minutosTotalesPorDia; minutosDesdeInicio += medicamento.frecuenciaConsumoHoras * 60) {
-                            // Calcular la fecha y hora exactas para la toma
-                            let minutosTotales = minutosInicio + minutosDesdeInicio;
-                            let horasTotales = Math.floor(minutosTotales / 60);
-                            let minutosDelDia = minutosTotales % 60;
-
-                            // Formatear la hora correctamente
-                            let horaToma = `${horasTotales % 24}`.padStart(2, '0');
-                            let minutoToma = `${minutosDelDia}`.padStart(2, '0');
-
-                            // Ajustar el día si las horas totales superan las 24 horas
-                            let diasExtra = Math.floor(horasTotales / 24);
-                            let fechaToma = new Date(ano, mes - 1, dia + diaTratamiento + diasExtra);
-
-                            // Formatear la fecha y la clave de almacenamiento
-                            let fechaString = fechaToma.toISOString().slice(0, 10);
-                            let clave = `${fechaString} ${horaToma}:${minutoToma}`;
-
-                            if (!medicamentosPorFechaHora[clave]) {
-                                medicamentosPorFechaHora[clave] = [];
-                            }
-                            medicamentosPorFechaHora[clave].push(medicamento.nombreMedicamento);
-                        }
-                    }
-                });
-
-                return Object.entries(medicamentosPorFechaHora).sort();
-            }
-
-            function generarPDF(medicamentosOrdenados) {
-                var doc = new jsPDF();
-                doc.setFont("helvetica");
-                doc.setFontSize(12);
-                doc.setTextColor(40);
-
-                var columnWidths = [30, 55, 70, 110];
-                var headers = ['Fecha', 'Día', 'Hora', 'Medicamento'];
-                for (var i = 0; i < headers.length; i++) {
-                    doc.text(headers[i], columnWidths[i], 20);
-                }
-
-                var y = 30;
-                for (var i = 0; i < medicamentosOrdenados.length; i++) {
-                    var fechaHora = medicamentosOrdenados[i][0];
-                    var meds = medicamentosOrdenados[i][1];
-                    var [fecha, hora] = fechaHora.split(' ');
-                    var diaSemana = new Date(`${fecha}T${hora}`).toLocaleDateString('es-ES', { weekday: 'long' });
-                    var nombres = meds.join(", ");
-                    var splitNombres = doc.splitTextToSize(nombres, columnWidths[3] - columnWidths[2] + 10);
-                    doc.text(fecha, columnWidths[0], y);
-                    doc.text(diaSemana, columnWidths[1], y);
-                    doc.text(hora, columnWidths[2], y);
-                    for (var j = 0; j < splitNombres.length; j++) {
-                        doc.text(splitNombres[j], columnWidths[3], y + j * 5);
-                    }
-                    doc.line(20, y + 3 + (splitNombres.length - 1) * 5, 170, y + 3 + (splitNombres.length - 1) * 5);
-                    y += 10 + (splitNombres.length - 1) * 5;
-                    if (y > doc.internal.pageSize.height - 20) { // Ajuste para evitar que el contenido se corte en la parte inferior
-                        doc.addPage();
-                        y = 20;
-                    }
-                }
-                doc.save('medicamentos.pdf');
-            }
-        </script>
+    </script>
 
 </body>
 
